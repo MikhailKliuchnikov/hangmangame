@@ -1,0 +1,269 @@
+// Global variables
+const alphabetChars = [
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "g",
+  "h",
+  "i",
+  "j",
+  "k",
+  "l",
+  "m",
+  "n",
+  "o",
+  "p",
+  "q",
+  "r",
+  "s",
+  "t",
+  "u",
+  "v",
+  "w",
+  "x",
+  "y",
+  "z",
+];
+// Random words and function call afterwards
+const randomWords = [
+  "apple",
+  "banana",
+  "cherry",
+  "dragonfly",
+  "elephant",
+  "forest",
+  "giraffe",
+  "horizon",
+  "island",
+  "jungle",
+  "kangaroo",
+  "lemon",
+  "mountain",
+  "nectar",
+  "ocean",
+  "penguin",
+  "quartz",
+  "rainbow",
+  "sunflower",
+  "tiger",
+  "umbrella",
+  "violet",
+  "whale",
+  "xylophone",
+  "yacht",
+  "zebra",
+  "avocado",
+  "breeze",
+  "cactus",
+  "dolphin",
+  "emerald",
+  "falcon",
+  "glacier",
+  "harbor",
+  "igloo",
+  "jewel",
+  "koala",
+  "lantern",
+  "meadow",
+  "nightfall",
+  "octopus",
+  "parrot",
+  "quokka",
+  "river",
+  "sapphire",
+  "toucan",
+  "unicorn",
+  "volcano",
+  "windmill",
+  "yogurt",
+  "zeppelin",
+  "almond",
+  "butterfly",
+  "cloud",
+  "desert",
+  "echo",
+  "flamingo",
+  "grove",
+  "hazel",
+  "iris",
+  "jade",
+  "kiwi",
+  "lilac",
+  "mango",
+  "nebula",
+  "olive",
+  "peach",
+  "quiver",
+  "rose",
+  "starfish",
+  "tulip",
+  "urchin",
+  "violet",
+  "willow",
+  "xenon",
+  "yeti",
+  "zenith",
+  "anchor",
+  "blizzard",
+  "coral",
+  "daisy",
+  "ember",
+  "fern",
+  "gazelle",
+  "honey",
+  "indigo",
+  "jasmine",
+  "kelp",
+  "lotus",
+  "maple",
+  "nutmeg",
+  "opal",
+  "pine",
+  "quince",
+  "raven",
+  "sage",
+  "thistle",
+  "umbra",
+  "velvet",
+  "walnut",
+];
+const parts = ["ground"/*ground*/, "head"/*scaffold*/, "scaffold"/*head*/,   "legs"/*body*/, "arms"/*arms*/, "body"/*leg*/];
+let iterationIndex;
+let secretWord;
+
+function initGame() {
+  resetGuessesDisplay();
+
+  iterationIndex = 0;
+  secretWord = randomWords[Math.floor(Math.random() * randomWords.length)];
+  createSecretWordElements(secretWord);
+
+  hideHangman();
+  addSubmitElAndListener();
+}
+
+// Hangman visibility manipultaions
+
+function hideHangman() {
+  const partIds = ["scaffold", "head", "body", "arms", "legs", "ground"];
+  partIds.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.visibility = "hidden";
+    }
+  });
+}
+function showHangmanPart(partId) {
+  const el = document.getElementById(partId);
+  if (el) {
+    el.style.visibility = "visible";
+  }
+}
+
+// Hidden word mechanics
+
+// Creation & revealing the correct characters
+function addWrongGuess(letter) {
+  const wrongCharsList = document.getElementById("wrong-chars");
+  // Prevent duplicates
+  if (
+    [...wrongCharsList.children].some(
+      (li) => li.innerText === letter.toLowerCase()
+    )
+  )
+    return;
+
+  const li = document.createElement("li");
+  li.innerText = letter.toLowerCase();
+  li.classList.add("wrong");
+  wrongCharsList.appendChild(li);
+}
+// Element creation
+function createSecretWordElements(word) {
+  const parentEl = document.getElementById("secretWord");
+  parentEl.innerHTML = "";
+
+  word.split("").forEach((char) => {
+    const li = document.createElement("li");
+    li.innerText = char;
+    li.classList.add("invisible");
+    li.classList.add("secret-char");
+    parentEl.appendChild(li);
+  });
+}
+
+// Reveal correct guesses
+function revealCorrectChar(letter) {
+  document.querySelectorAll("#secretWord li").forEach((li) => {
+    if (li.innerText.toLowerCase() === letter.toLowerCase()) {
+      li.classList.remove("invisible");
+    }
+  });
+}
+
+function resetGuessesDisplay() {
+  document.getElementById("secretWord").innerHTML = "";
+  document.getElementById("wrong-chars").innerHTML = "";
+}
+
+// function for determining the outcome of a round
+
+function playRound(playerGuess) {
+  playerGuess = playerGuess.toLowerCase();
+  if ([...secretWord].includes(playerGuess)) {
+    revealCorrectChar(playerGuess);
+    if (checkWinCond()) {
+      alert("You win! The word is: " + secretWord);
+      if (confirm("Wanna play again?")) {
+        initGame();
+      } else {
+        alert("Game over");
+      }
+    }
+  } else {
+    showHangmanPart(parts[iterationIndex]);
+    addWrongGuess(playerGuess);
+    iterationIndex++;
+    if (checkLoseCond()) {
+      showHangmanPart(parts[iterationIndex]);
+      alert("You lose! The word was: " + secretWord);
+      if (confirm("Wanna play again?")) {
+        initGame();
+      } else {
+        alert("Game over");
+      }
+    }
+  }
+}
+
+function checkWinCond() {
+  const hidden = document.querySelectorAll("#secretWord .invisible");
+  return hidden.length === 0;
+}
+function checkLoseCond() {
+  return iterationIndex >= parts.length;
+}
+// Function adds event listeners for submit button
+
+function addSubmitElAndListener() {
+  const clone = document.getElementById("sumbitTpl").content.cloneNode(true);
+
+  const form = clone.querySelector(".myForm");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    let playerGuess = form.elements["guess"].value;
+    playRound(playerGuess);
+    form.elements["guess"].value = "";
+  });
+
+  // Clear previous one in order to prevent stacking listeners
+  document.getElementById("submitWrapper").innerHTML = "";
+  document.getElementById("submitWrapper").appendChild(clone);
+}
+
+// TEST GROUNDS
+initGame();
