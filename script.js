@@ -190,6 +190,7 @@ function addWrongGuess(letter) {
     return;
 
   showHangmanPart(parts[iterationIndex]);
+  iterationIndex++;
   const li = document.createElement("li");
   li.innerText = letter.toLowerCase();
   li.classList.add("wrong");
@@ -282,7 +283,6 @@ function resetGuessesDisplay() {
 // function for determining the outcome of a round
 
 function playRound(playerGuess) {
-  let wrongChars = document.getElementById('wrong-chars');
 
   playerGuess = playerGuess.toLowerCase();
   if ([...secretWord].includes(playerGuess)) {
@@ -294,7 +294,6 @@ function playRound(playerGuess) {
     return;
   } else {
     addWrongGuess(playerGuess);
-    iterationIndex++;
     if (checkLoseCond()) {
       showHangmanPart(parts[iterationIndex]);
       lose(secretWord);
