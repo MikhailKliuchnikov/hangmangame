@@ -130,11 +130,24 @@ const randomWords = [
   "velvet",
   "walnut",
 ];
-const parts = ["ground"/*ground*/, "head"/*scaffold*/, "scaffold"/*head*/,   "legs"/*body*/, "arms"/*arms*/, "body"/*leg*/];
+const parts = [
+  "ground" /*ground*/,
+  "head" /*scaffold*/,
+  "scaffold" /*head*/,
+  "legs" /*body*/,
+  "arms" /*arms*/,
+  "body" /*leg*/,
+];
 let iterationIndex;
 let secretWord;
 
 function initGame() {
+  const endingWindow = document.querySelector(".endingWindow");
+  const menu = document.getElementById("menu");
+  if (endingWindow && menu) {
+    endingWindow.replaceWith(menu);
+  }
+
   resetGuessesDisplay();
 
   iterationIndex = 0;
@@ -171,11 +184,12 @@ function addWrongGuess(letter) {
   // Prevent duplicates
   if (
     [...wrongCharsList.children].some(
-      (li) => li.innerText === letter.toLowerCase()
+      (li) => li.innerText.toLowerCase() === letter.toLowerCase()
     )
   )
     return;
 
+  showHangmanPart(parts[iterationIndex]);
   const li = document.createElement("li");
   li.innerText = letter.toLowerCase();
   li.classList.add("wrong");
@@ -188,20 +202,76 @@ function createSecretWordElements(word) {
 
   word.split("").forEach((char) => {
     const li = document.createElement("li");
-    li.innerText = char;
-    li.classList.add("invisible");
-    li.classList.add("secret-char");
+    const p = document.createElement("p");
+    p.innerText = char;
+    p.classList.add("secret-char");
+    li.classList.add("secretContainer");
+    li.appendChild(p);
     parentEl.appendChild(li);
   });
 }
 
 // Reveal correct guesses
 function revealCorrectChar(letter) {
-  document.querySelectorAll("#secretWord li").forEach((li) => {
-    if (li.innerText.toLowerCase() === letter.toLowerCase()) {
-      li.classList.remove("invisible");
+  let paragraphs = document.querySelectorAll(".secret-char");
+  paragraphs.forEach((p) => {
+    let char = p.innerHTML.toLowerCase();
+    if (char === letter.toLowerCase()) {
+      p.classList.add("visible");
     }
   });
+}
+
+function win(secretWord) {
+  document.getElementById("menu").style.display = "none";
+
+  const mainEl = document.createElement("div");
+  mainEl.classList.add("endingWindow");
+
+  const header = document.createElement("h3");
+  header.innerText = "Congratulations! You win!";
+
+  const p = document.createElement("p");
+  p.innerText = `The secret word was:   --${secretWord}--`;
+
+  const button = document.createElement("button");
+  button.innerText = "Play again";
+  button.onclick = () => {
+    mainEl.remove();
+    document.getElementById("menu").style.display = "";
+    initGame();
+  };
+
+  mainEl.appendChild(header);
+  mainEl.appendChild(p);
+  mainEl.appendChild(button);
+  document.getElementById("game-container").appendChild(mainEl);
+}
+
+function lose(secretWord) {
+  document.getElementById("menu").style.display = "none";
+
+  const mainEl = document.createElement("div");
+  mainEl.classList.add("endingWindow");
+
+  const header = document.createElement("h3");
+  header.innerText = "Alas! You lose!";
+
+  const p = document.createElement("p");
+  p.innerText = `The secret word was:  --${secretWord}--`;
+
+  const button = document.createElement("button");
+  button.innerText = "Play again";
+  button.onclick = () => {
+    mainEl.remove();
+    document.getElementById("menu").style.display = "";
+    initGame();
+  };
+
+  mainEl.appendChild(header);
+  mainEl.appendChild(p);
+  mainEl.appendChild(button);
+  document.getElementById("game-container").appendChild(mainEl);
 }
 
 function resetGuessesDisplay() {
@@ -212,37 +282,33 @@ function resetGuessesDisplay() {
 // function for determining the outcome of a round
 
 function playRound(playerGuess) {
+  let wrongChars = document.getElementById('wrong-chars');
+
   playerGuess = playerGuess.toLowerCase();
   if ([...secretWord].includes(playerGuess)) {
     revealCorrectChar(playerGuess);
     if (checkWinCond()) {
-      alert("You win! The word is: " + secretWord);
-      if (confirm("Wanna play again?")) {
-        initGame();
-      } else {
-        alert("Game over");
-      }
+      win(secretWord);
     }
+  } else if(!playerGuess){
+    return;
   } else {
-    showHangmanPart(parts[iterationIndex]);
     addWrongGuess(playerGuess);
     iterationIndex++;
     if (checkLoseCond()) {
       showHangmanPart(parts[iterationIndex]);
-      alert("You lose! The word was: " + secretWord);
-      if (confirm("Wanna play again?")) {
-        initGame();
-      } else {
-        alert("Game over");
-      }
+      lose(secretWord);
     }
   }
 }
 
 function checkWinCond() {
-  const hidden = document.querySelectorAll("#secretWord .invisible");
-  return hidden.length === 0;
+  const chars = document.querySelectorAll("#secretWord .secret-char");
+  return [...chars].every(
+    (char) => window.getComputedStyle(char).visibility === "visible"
+  );
 }
+
 function checkLoseCond() {
   return iterationIndex >= parts.length;
 }

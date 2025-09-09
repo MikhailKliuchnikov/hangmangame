@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
     <title>HANGMAN game</title>
   </head>
   <body>
@@ -60,30 +60,23 @@
         </svg>
       </div>
 
+      <div id="menu">
+        <div>
+          <ul id="secretWord"></ul>
+        </div>
 
-      
-      <div>
-        <ul id="secretWord"></ul>
-      </div>
+        <div id="submitWrapper"></div>
 
-      <div id="submitWrapper">
-
-      </div>
-
-      <div id="wrong-chars-wrapper">
-        <ul id="wrong-chars"></ul>
+        <div id="wrong-chars-wrapper">
+          <ul id="wrong-chars"></ul>
+        </div>
       </div>
       
     </div>
 
     <template id="sumbitTpl">
       <form class="myForm">
-        <input
-          type="text"
-          name="guess"
-          placeholder="Letter"
-          maxlength="1"
-        />
+        <input type="text" name="guess" placeholder="Letter" maxlength="1" />
         <button type="submit">Make a guess!</button>
       </form>
     </template>
